@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HamaraMarket - Professional Network</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+/* ---------------- THEME ---------------- */
+:root{
+  --bg:#f3f2ef;
+  --card:#ffffff;
+  --text:#1c1c1c;
+  --blue:#0a66c2;
+  --border:#ddd;
+}
+
+body{
+  margin:0;
+  font-family:Segoe UI, Arial, sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+h1,h2,h3{margin:0}
+
+/* ---------------- NAVBAR ---------------- */
+nav{
+  background:#fff;
+  border-bottom:1px solid var(--border);
+  padding:10px 30px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+nav h2{color:var(--blue)}
+
+nav button{
+  background:none;
+  border:none;
+  font-size:15px;
+  margin-left:15px;
+  cursor:pointer;
+}
+
+nav button:hover{color:var(--blue)}
+
+/* ---------------- LAYOUT ---------------- */
+.container{
+  max-width:1200px;
+  margin:auto;
+  display:grid;
+  grid-template-columns:250px 1fr 250px;
+  gap:20px;
+  padding:20px;
+}
+
+.card{
+  background:var(--card);
+  padding:15px;
+  border-radius:8px;
+  border:1px solid var(--border);
+}
+
+input,textarea,select,button{
+  width:100%;
+  padding:8px;
+  margin-top:8px;
+  border-radius:5px;
+  border:1px solid var(--border);
+}
+
+button.primary{
+  background:var(--blue);
+  color:white;
+  border:none;
+}
+
+button.primary:hover{opacity:0.9}
+
+/* ---------------- LOGIN ---------------- */
+#loginPage{
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+#app{display:none}
+
+/* ---------------- POSTS ---------------- */
+.post{
+  border-bottom:1px solid var(--border);
+  padding:10px 0;
+}
+
+.post b{color:var(--blue)}
+
+/* ---------------- JOB CARD ---------------- */
+.job{
+  border-bottom:1px solid var(--border);
+  padding:10px 0;
+}
+
+/* ---------------- PROFILE ---------------- */
+.profile-name{font-weight:bold}
+.profile-role{color:gray;font-size:14px}
+
+/* ---------------- CHAT ---------------- */
+#chatBox{height:200px;overflow:auto;border:1px solid var(--border);padding:10px}
+.msg-user{background:#e8f0fe;padding:6px;border-radius:5px;margin:4px 0}
+.msg-bot{background:#f1f1f1;padding:6px;border-radius:5px;margin:4px 0}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage">
+  <div class="card" style="width:300px">
+    <h2>Join HamaraMarket</h2>
+    <input id="name" placeholder="Your Name">
+    <select id="role">
+      <option value="Worker">Worker</option>
+      <option value="Employer">Employer</option>
+    </select>
+    <button class="primary" onclick="doLogin()">Continue</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+<nav>
+  <h2>HamaraMarket</h2>
+  <div>
+    <button onclick="show('home')">Home</button>
+    <button onclick="show('jobs')">Jobs</button>
+    <button onclick="show('chat')">Messaging</button>
+    <button onclick="show('profile')">Profile</button>
+  </div>
+</nav>
+
+<!-- HOME -->
+<section id="home">
+<div class="container">
+
+<!-- LEFT -->
+<div class="card">
+  <div class="profile-name" id="sideName"></div>
+  <div class="profile-role" id="sideRole"></div>
+</div>
+
+<!-- CENTER -->
+<div>
+  <div class="card">
+    <textarea id="postText" placeholder="Start a post..."></textarea>
+    <button class="primary" onclick="addPost()">Post</button>
+  </div>
+
+  <div id="feed"></div>
+</div>
+
+<!-- RIGHT -->
+<div class="card">
+  <h3>Suggested Jobs</h3>
+  <div id="miniJobs"></div>
+</div>
+
+</div>
+</section>
+
+<!-- JOBS -->
+<section id="jobs" style="display:none">
+<div class="container">
+
+<div></div>
+
+<div>
+  <div class="card">
+    <textarea id="jobText" placeholder="Post a job..."></textarea>
+    <input id="jobSkill" placeholder="Required Skill">
+    <button class="primary" onclick="postJob()">Post Job</button>
+  </div>
+
+  <div id="jobList"></div>
+</div>
+
+<div></div>
+</div>
+</section>
+
+<!-- CHAT -->
+<section id="chat" style="display:none">
+<div class="container">
+
+<div></div>
+
+<div class="card">
+  <h3>AI Assistant</h3>
+  <div id="chatBox"></div>
+  <input id="chatInput" placeholder="Ask something">
+  <button class="primary" onclick="sendMsg()">Send</button>
+</div>
+
+<div></div>
+</div>
+</section>
+
+<!-- PROFILE -->
+<section id="profile" style="display:none">
+<div class="container">
+
+<div></div>
+
+<div class="card">
+  <h3>Your Profile</h3>
+  <p id="pName"></p>
+  <p id="pRole"></p>
+</div>
+
+<div></div>
+</div>
+</section>
+
+</div>
+
+<script>
+let currentUser=null;
+
+function show(id){
+  document.querySelectorAll('section').forEach(s=>s.style.display='none');
+  document.getElementById(id).style.display='block';
+}
+
+function doLogin(){
+  currentUser={name:name.value,role:role.value};
+  localStorage.setItem('user',JSON.stringify(currentUser));
+  loginPage.style.display='none';
+  app.style.display='block';
+  loadUser();
+}
+
+function loadUser(){
+  let u=JSON.parse(localStorage.getItem('user'));
+  if(!u) return;
+  sideName.innerText=u.name;
+  sideRole.innerText=u.role;
+  pName.innerText="Name: "+u.name;
+  pRole.innerText="Role: "+u.role;
+}
+
+/* POSTS */
+function addPost(){
+  let posts=JSON.parse(localStorage.getItem('posts')||'[]');
+  posts.unshift({name:currentUser.name,text:postText.value});
+  localStorage.setItem('posts',JSON.stringify(posts));
+  postText.value="";
+  renderPosts();
+}
+
+function renderPosts(){
+  let posts=JSON.parse(localStorage.getItem('posts')||'[]');
+  feed.innerHTML=posts.map(p=>`<div class='card post'><b>${p.name}</b><p>${p.text}</p></div>`).join('');
+}
+
+/* JOBS */
+function postJob(){
+  let jobs=JSON.parse(localStorage.getItem('jobs')||'[]');
+  jobs.unshift({text:jobText.value,skill:jobSkill.value});
+  localStorage.setItem('jobs',JSON.stringify(jobs));
+  jobText.value="";jobSkill.value="";
+  renderJobs();
+}
+
+function renderJobs(){
+  let jobs=JSON.parse(localStorage.getItem('jobs')||'[]');
+  jobList.innerHTML=jobs.map(j=>`<div class='card job'><b>${j.text}</b><p>Skill: ${j.skill}</p><button class='primary'>Apply</button></div>`).join('');
+  miniJobs.innerHTML=jobs.slice(0,3).map(j=>`<p>${j.text}</p>`).join('');
+}
+
+/* AI CHAT */
+function sendMsg(){
+  let q=chatInput.value;
+  if(!q) return;
+  chatBox.innerHTML+=`<div class='msg-user'>${q}</div>`;
+  let a="I can help you with jobs, hiring, and career growth.";
+  if(q.toLowerCase().includes('job')) a="Go to Jobs page to apply or post jobs.";
+  chatBox.innerHTML+=`<div class='msg-bot'>${a}</div>`;
+  chatInput.value="";
+}
+
+renderPosts();
+renderJobs();
+loadUser();
+</script>
+</body>
+</html>
